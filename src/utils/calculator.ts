@@ -1,4 +1,4 @@
-import { UserStats, CalculatedMetrics } from '../types';
+import { UserStats, CalculatedMetrics, Gender } from '../types';
 
 export function calculateMetrics(stats: UserStats): CalculatedMetrics | null {
   const { weight, height, waist, neck, hip, gender, age } = stats;
@@ -45,11 +45,20 @@ export function calculateMetrics(stats: UserStats): CalculatedMetrics | null {
   };
 }
 
-export function recommendGoal(metrics: CalculatedMetrics, age: number): string {
+export function recommendGoal(metrics: CalculatedMetrics, age: number, gender: Gender): string {
   if (age < 18) {
-    return "Maintain (Focus on nutrition and activity; consult a doctor before strict cutting/bulking).";
+    return "Maintain (Adolescent recommendation: focus on healthy habits rather than strict cutting or bulking).";
   }
-  if (metrics.bodyFat > 22) return "Cut";
-  if (metrics.bodyFat < 12) return "Bulk";
-  return "Maintain";
+
+  const bf = metrics.bodyFat;
+
+  if (gender === 'Male') {
+    if (bf < 15) return "Bulk";
+    if (bf > 27) return "Cut";
+    return "Maintain";
+  } else {
+    if (bf < 20) return "Bulk";
+    if (bf > 35) return "Cut";
+    return "Maintain";
+  }
 }
