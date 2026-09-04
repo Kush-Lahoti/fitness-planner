@@ -1,6 +1,7 @@
 export type Gender = 'Male' | 'Female';
 export type Goal = 'Bulk' | 'Cut' | 'Maintain';
 export type TrainingStyle = 'Gym' | 'Calisthenics' | 'Home Workout';
+export type CalisthenicsLevel = 'Beginner' | 'Intermediate' | 'Advanced';
 export type TrainingDays = 2 | 3 | 4 | 5;
 
 export interface UserStats {
