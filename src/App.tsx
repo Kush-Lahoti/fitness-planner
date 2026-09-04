@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { UserStats, CalculatedMetrics, Goal, TrainingStyle, TrainingDays, WorkoutDay } from './types';
+import { UserStats, CalculatedMetrics, Goal, TrainingStyle, CalisthenicsLevel, TrainingDays, WorkoutDay } from './types';
 import { calculateMetrics, recommendGoal } from './utils/calculator';
-import { generateWorkout } from './data/workoutData';
+import { generateGymWorkout, generateCalisthenicsWorkout } from './data/workoutData';
 
 export default function App() {
   const [step, setStep] = useState<number>(1);
@@ -12,7 +12,8 @@ export default function App() {
   const [error, setError] = useState<string>('');
   
   const [goal, setGoal] = useState<Goal | null>(null);
-  const [, setStyle] = useState<TrainingStyle | null>(null);
+  const [style, setStyle] = useState<TrainingStyle | null>(null);
+  const [caliLevel, setCaliLevel] = useState<CalisthenicsLevel>('Beginner');
   const [days, setDays] = useState<TrainingDays | null>(null);
   const [workout, setWorkout] = useState<WorkoutDay[] | null>(null);
 
@@ -34,16 +35,19 @@ export default function App() {
 
   const handleGenerate = (selectedDays: TrainingDays) => {
     setDays(selectedDays);
-    if (goal) {
-      setWorkout(generateWorkout(goal, selectedDays));
-      setStep(5);
+    if (style === 'Gym' && goal) {
+      setWorkout(generateGymWorkout(goal, selectedDays));
+    } else if (style === 'Calisthenics') {
+      setWorkout(generateCalisthenicsWorkout(caliLevel, selectedDays));
     }
+    setStep(6);
   };
 
   const reset = () => {
     setStep(1);
     setGoal(null);
     setStyle(null);
+    setCaliLevel('Beginner');
     setDays(null);
     setWorkout(null);
     setError('');
@@ -55,7 +59,7 @@ export default function App() {
         <header className="flex justify-between items-center mb-10 pb-4 border-b border-gray-800">
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></span>
-            ForgeFitness
+            Fitness Forge
           </h1>
           {step > 1 && (
             <button onClick={reset} className="text-sm text-gray-400 hover:text-white transition-colors">
@@ -128,7 +132,7 @@ export default function App() {
             </div>
 
             <h2 className="text-2xl font-bold mb-2">Select Your Goal</h2>
-            <p className="text-gray-400 mb-6">Recommendation: <span className="text-blue-400 font-medium">{recommendGoal(metrics, Number(stats.age))}</span></p>
+            <p className="text-gray-400 mb-6">Recommendation: <span className="text-blue-400 font-medium">{recommendGoal(metrics, Number(stats.age), stats.gender)}</span></p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {(['Bulk', 'Cut', 'Maintain'] as Goal[]).map(g => (
@@ -155,15 +159,16 @@ export default function App() {
             <button onClick={() => setStep(2)} className="text-gray-400 mb-6 hover:text-white">&larr; Back</button>
             <h2 className="text-2xl font-bold mb-6">Choose Your Training Style</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <button onClick={() => { setStyle('Gym'); setStep(4); }} className="bg-gray-900 border border-gray-800 hover:border-blue-500 rounded-2xl p-6 text-left transition">
+              <button onClick={() => { setStyle('Gym'); setStep(5); }} className="bg-gray-900 border border-gray-800 hover:border-blue-500 rounded-2xl p-6 text-left transition">
                 <h4 className="text-xl font-bold text-white mb-2">Gym Workout</h4>
-                <p className="text-sm text-gray-400">Full access to barbells, dumbbells, and cable machines.</p>
+                <p className="text-sm text-gray-400">Full access to barbells, dumbbells, and machines.</p>
               </button>
-              <div className="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 text-left opacity-50 relative">
-                <span className="absolute top-4 right-4 bg-gray-800 text-gray-400 text-xs px-2 py-0.5 rounded">Coming Soon</span>
-                <h4 className="text-xl font-bold text-gray-300 mb-2">Calisthenics</h4>
-                <p className="text-sm text-gray-500">Bodyweight-only strength progression.</p>
-              </div>
+
+              <button onClick={() => { setStyle('Calisthenics'); setStep(4); }} className="bg-gray-900 border border-gray-800 hover:border-blue-500 rounded-2xl p-6 text-left transition">
+                <h4 className="text-xl font-bold text-white mb-2">Calisthenics</h4>
+                <p className="text-sm text-gray-400">Master bodyweight strength, bars, and skill progressions.</p>
+              </button>
+
               <div className="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 text-left opacity-50 relative">
                 <span className="absolute top-4 right-4 bg-gray-800 text-gray-400 text-xs px-2 py-0.5 rounded">Coming Soon</span>
                 <h4 className="text-xl font-bold text-gray-300 mb-2">Home Workout</h4>
@@ -173,10 +178,34 @@ export default function App() {
           </div>
         )}
 
-        {/* Step 4: Days */}
+        {/* Step 4: Calisthenics Level Selection */}
         {step === 4 && (
           <div>
             <button onClick={() => setStep(3)} className="text-gray-400 mb-6 hover:text-white">&larr; Back</button>
+            <h2 className="text-2xl font-bold mb-6">Select Your Calisthenics Skill Level</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {(['Beginner', 'Intermediate', 'Advanced'] as CalisthenicsLevel[]).map(lvl => (
+                <button 
+                  key={lvl} 
+                  onClick={() => { setCaliLevel(lvl); setStep(5); }}
+                  className="bg-gray-900 border border-gray-800 hover:border-blue-500 rounded-2xl p-6 text-left transition group"
+                >
+                  <h4 className="text-xl font-bold text-white mb-2 group-hover:text-blue-400">{lvl}</h4>
+                  <p className="text-sm text-gray-400">
+                    {lvl === 'Beginner' && 'Foundational movements: knee/incline push-ups, dead hangs, and mobility.'}
+                    {lvl === 'Intermediate' && 'Standard push-ups, pull-ups, dips, and preliminary wall handstands.'}
+                    {lvl === 'Advanced' && 'High-skill strength: muscle-ups, levers, planche, and handstand push-ups.'}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 5: Training Days */}
+        {step === 5 && (
+          <div>
+            <button onClick={() => setStep(style === 'Calisthenics' ? 4 : 3)} className="text-gray-400 mb-6 hover:text-white">&larr; Back</button>
             <h2 className="text-2xl font-bold mb-6">How many days per week will you train?</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {([2, 3, 4, 5] as TrainingDays[]).map(d => (
@@ -193,21 +222,46 @@ export default function App() {
           </div>
         )}
 
-        {/* Step 5: Dashboard */}
-        {step === 5 && workout && metrics && (
+        {/* Step 6: Dashboard */}
+        {step === 6 && workout && metrics && (
           <div className="space-y-8">
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
               <h2 className="text-xl font-bold mb-4">Your Program Summary</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                <div><span className="text-gray-400 block">Style</span><span className="font-semibold text-white">{style} {style === 'Calisthenics' && `(${caliLevel})`}</span></div>
                 <div><span className="text-gray-400 block">Goal</span><span className="font-semibold text-white">{goal}</span></div>
                 <div><span className="text-gray-400 block">Frequency</span><span className="font-semibold text-white">{days} Days / Week</span></div>
-                <div><span className="text-gray-400 block">BMI</span><span className="font-semibold text-white">{metrics.bmi} ({metrics.bmiCategory})</span></div>
                 <div><span className="text-gray-400 block">Body Fat</span><span className="font-semibold text-white">~{metrics.bodyFat}%</span></div>
               </div>
+
+              {/* Nutrition Guidance Box */}
+              {goal === 'Cut' && (
+                <div className="mt-4 p-4 rounded-xl bg-orange-950/40 border border-orange-500/30 text-orange-300 text-sm">
+                  💡 <strong>Nutrition Note:</strong> If you want to cut, go into a calorie deficit, drink plenty of water, and fulfill your daily protein needs.
+                </div>
+              )}
+              {goal === 'Bulk' && (
+                <div className="mt-4 p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-sm">
+                  💡 <strong>Nutrition Note:</strong> If you want to bulk, increase your calories with nutrient-dense foods and keep protein intake high.
+                </div>
+              )}
+
+              {/* Calisthenics Level Progression Guidance */}
+              {style === 'Calisthenics' && caliLevel === 'Beginner' && (
+                <div className="mt-4 p-4 rounded-xl bg-blue-950/40 border border-blue-500/30 text-blue-300 text-sm">
+                  📌 <strong>Progression Note:</strong> Once these beginner exercises start feeling easy, jump up to the <strong>Intermediate</strong> level! (Note: You will need a bar or sturdy overhead support for pulling exercises).
+                </div>
+              )}
+              {style === 'Calisthenics' && caliLevel === 'Intermediate' && (
+                <div className="mt-4 p-4 rounded-xl bg-blue-950/40 border border-blue-500/30 text-blue-300 text-sm">
+                  📌 <strong>Progression Note:</strong> Once you feel these exercises become easy, increase your sets and reps, then jump up to the <strong>Advanced</strong> skills!
+                </div>
+              )}
             </div>
 
+            {/* Weekly Workout Days */}
             <div className="space-y-4">
-              <h3 className="text-xl font-bold text-white">Weekly Split</h3>
+              <h3 className="text-xl font-bold text-white">Weekly Routine</h3>
               {workout.map(day => (
                 <div key={day.dayNumber} className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
                   <div className="flex justify-between items-center mb-4 border-b border-gray-800 pb-3">
