@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { UserStats, CalculatedMetrics, Goal, TrainingStyle, CalisthenicsLevel, TrainingDays, WorkoutDay } from './types';
 import { calculateMetrics, recommendGoal } from './utils/calculator';
 import { generateGymWorkout, generateCalisthenicsWorkout } from './data/workoutData';
@@ -288,6 +289,7 @@ export default function App() {
           </div>
         )}
       </div>
+      <Analytics />
     </div>
   );
 }
