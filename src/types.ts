@@ -37,8 +37,8 @@ export interface WorkoutDay {
 
 export interface DietMeal {
   name: string;
-  items: string;
   image: string;
+  items: string[];
 }
 
 export interface DietPlan {
