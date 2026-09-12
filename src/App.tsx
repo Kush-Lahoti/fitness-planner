@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserStats, CalculatedMetrics, Goal, TrainingStyle, CalisthenicsLevel, TrainingDays, WorkoutDay, DietBudget } from './types';
-import { calculateMetrics } from './utils/calculator';
+import { calculateMetrics, recommendGoal } from './utils/calculator';
 import { generateGymWorkout, generateCalisthenicsWorkout } from './data/workoutData';
 import { DIET_PLANS } from './data/dietData';
 
@@ -43,15 +43,22 @@ export default function App() {
     setStep(1); setGoal(null); setStyle(null); setCaliLevel('Beginner'); setDietBudget(null); setWorkout(null); setError('');
   };
 
-  const renderDietCard = (meal: {name: string, items: string, image: string}) => (
+  const renderDietCard = (meal: {name: string, items: string[], image: string}) => (
     <div key={meal.name} className="flex flex-col bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-blue-900/20 transition-all group">
       <div className="h-56 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-900/40 to-transparent z-10"></div>
         <img src={meal.image} alt={meal.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
         <h3 className="absolute bottom-4 left-5 z-20 text-3xl font-black text-white tracking-wider drop-shadow-md">{meal.name}</h3>
       </div>
-      <div className="p-6 flex-grow">
-        <p className="text-gray-300 text-[15px] leading-relaxed font-medium">{meal.items}</p>
+      <div className="p-6 md:p-8 flex-grow">
+        <ul className="space-y-4">
+          {meal.items.map((item, idx) => (
+            <li key={idx} className="flex items-start gap-3">
+              <span className="text-blue-500 mt-1 flex-shrink-0 text-xl">🥗</span>
+              <span className="text-gray-200 text-lg md:text-xl font-medium leading-snug">{item}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
@@ -89,7 +96,18 @@ export default function App() {
         {step === 2 && metrics && (
           <div>
             <button onClick={() => setStep(1)} className="text-gray-400 mb-6">&larr; Back</button>
-            <h2 className="text-2xl font-bold mb-6">Select Your Goal</h2>
+            
+            <div className="bg-blue-950/40 border border-blue-500/30 rounded-2xl p-6 mb-8">
+              <h3 className="text-blue-400 font-semibold mb-3">Your Baseline Estimates</h3>
+              <div className="grid grid-cols-2 gap-4 text-lg">
+                <div>BMI: <span className="text-white font-bold">{metrics.bmi}</span> <span className="text-sm text-gray-400 block">{metrics.bmiCategory}</span></div>
+                <div>Body Fat: <span className="text-white font-bold">{metrics.bodyFat}%</span> <span className="text-sm text-gray-400 block">U.S. Navy Method</span></div>
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-bold mb-2">Select Your Goal</h2>
+            <p className="text-gray-400 mb-6 text-lg">Recommendation: <span className="text-blue-400 font-bold">{recommendGoal(metrics, Number(stats.age), stats.gender)}</span></p>
+            
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {(['Bulk', 'Cut', 'Maintain'] as Goal[]).map(g => (
                 <button key={g} onClick={() => { setGoal(g); setStep(3); }} className="bg-gray-900 border border-gray-800 hover:border-blue-500 rounded-2xl p-6 text-left group">
@@ -202,17 +220,17 @@ export default function App() {
                 </div>
                 
                 {goal === 'Cut' && (
-                  <div className="p-5 rounded-2xl bg-orange-950/40 border border-orange-500/30 text-orange-300 text-[15px] shadow-lg">
+                  <div className="p-5 rounded-2xl bg-orange-950/40 border border-orange-500/30 text-orange-300 text-[16px] md:text-lg shadow-lg">
                     🔥 <strong>Cut Protocol:</strong> You must remain in a calorie deficit! Eat fewer carbs, prioritize protein, and strictly replace all milk/dairy drinks with water where indicated.
                   </div>
                 )}
                 {goal === 'Bulk' && (
-                  <div className="p-5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-[15px] shadow-lg">
+                  <div className="p-5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-[16px] md:text-lg shadow-lg">
                     💪 <strong>Bulk Protocol:</strong> Eat in a calorie surplus! Keep protein high and load up on nutrient-dense carbohydrates to fuel muscle growth.
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                   {renderDietCard(DIET_PLANS[goal === 'Maintain' ? 'Bulk' : goal][dietBudget].breakfast)}
                   {renderDietCard(DIET_PLANS[goal === 'Maintain' ? 'Bulk' : goal][dietBudget].lunch)}
                   {renderDietCard(DIET_PLANS[goal === 'Maintain' ? 'Bulk' : goal][dietBudget].snacks)}
