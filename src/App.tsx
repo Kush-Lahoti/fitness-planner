@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserStats, CalculatedMetrics, Goal, TrainingStyle, CalisthenicsLevel, TrainingDays, WorkoutDay, DietBudget } from './types';
-import { calculateMetrics, recommendGoal } from './utils/calculator';
+import { calculateMetrics } from './utils/calculator';
 import { generateGymWorkout, generateCalisthenicsWorkout } from './data/workoutData';
 import { DIET_PLANS } from './data/dietData';
 
@@ -14,7 +14,6 @@ export default function App() {
   const [style, setStyle] = useState<TrainingStyle | null>(null);
   const [caliLevel, setCaliLevel] = useState<CalisthenicsLevel>('Beginner');
   const [dietBudget, setDietBudget] = useState<DietBudget | null>(null);
-  const [days, setDays] = useState<TrainingDays | null>(null);
   const [workout, setWorkout] = useState<WorkoutDay[] | null>(null);
 
   const handleStatChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -30,7 +29,6 @@ export default function App() {
   };
 
   const handleGenerateWorkout = (selectedDays: TrainingDays) => {
-    setDays(selectedDays);
     if (style === 'Gym' && goal) setWorkout(generateGymWorkout(goal, selectedDays));
     else if (style === 'Calisthenics') setWorkout(generateCalisthenicsWorkout(caliLevel, selectedDays));
     setStep(6);
@@ -42,7 +40,7 @@ export default function App() {
   };
 
   const reset = () => {
-    setStep(1); setGoal(null); setStyle(null); setCaliLevel('Beginner'); setDietBudget(null); setDays(null); setWorkout(null); setError('');
+    setStep(1); setGoal(null); setStyle(null); setCaliLevel('Beginner'); setDietBudget(null); setWorkout(null); setError('');
   };
 
   const renderDietCard = (meal: {name: string, items: string, image: string}) => (
@@ -69,7 +67,6 @@ export default function App() {
           {step > 1 && <button onClick={reset} className="text-sm text-gray-400 hover:text-white">Restart</button>}
         </header>
 
-        {/* Step 1: Body Metrics */}
         {step === 1 && (
           <div>
             <h2 className="text-3xl font-bold mb-2">Let's get your baseline.</h2>
@@ -89,7 +86,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Step 2: Goal Selection */}
         {step === 2 && metrics && (
           <div>
             <button onClick={() => setStep(1)} className="text-gray-400 mb-6">&larr; Back</button>
@@ -105,7 +101,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Step 3: Pathway Selection (Workout OR Diet) */}
         {step === 3 && (
           <div>
             <button onClick={() => setStep(2)} className="text-gray-400 mb-6">&larr; Back</button>
@@ -128,7 +123,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Step 4: Calisthenics Level OR Diet Budget */}
         {step === 4 && style === 'Calisthenics' && (
           <div>
             <button onClick={() => setStep(3)} className="text-gray-400 mb-6">&larr; Back</button>
@@ -160,7 +154,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Step 5: Training Days (Workout Only) */}
         {step === 5 && (
           <div>
             <button onClick={() => setStep(style === 'Calisthenics' ? 4 : 3)} className="text-gray-400 mb-6">&larr; Back</button>
@@ -175,10 +168,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Step 6: Dashboards */}
         {step === 6 && (
           <div className="space-y-8">
-            {/* WORKOUT DASHBOARD */}
             {style !== 'Diet' && workout && (
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold">Your Workout Plan</h2>
@@ -203,7 +194,6 @@ export default function App() {
               </div>
             )}
 
-            {/* DIET DASHBOARD */}
             {style === 'Diet' && dietBudget && goal && (
               <div className="space-y-8">
                 <div className="text-center mb-10">
